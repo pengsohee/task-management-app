@@ -1,0 +1,6 @@
+fixes:
+
+- CreateTask
+- GetTaskByID Response
+- UpdateTask (not tested)
+- DeleteTask (204 : UNDOCUMENTED, BUT WORKS)
