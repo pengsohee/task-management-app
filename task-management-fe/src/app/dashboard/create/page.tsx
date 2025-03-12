@@ -19,7 +19,7 @@ export default function CreateTaskPage() {
     return (
         <div className='container mx-auto p-4 max-w-2xl'>
             <h2 className='text-xl font-bold mb-4'>Create New Task</h2>
-            <TaskForm onSubmit={handleSubmit} />
+            <TaskForm onSubmit={handleSubmit} projects={[]} users={[]} />
         </div>
     );
 }

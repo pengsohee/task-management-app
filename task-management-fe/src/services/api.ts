@@ -13,7 +13,15 @@ export const taskApi = {
     },
 
     create: async (task: CreateTask) => {
-        const response = await api.post<ProjectTask>('/api/tasks', task);
+        const formattedTask = {
+            title: task.title,  // Convert taskTitle -> title
+            description: task.description,  
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : undefined,  
+            projectId: task.projectId,  
+            userId: task.userId
+        };
+
+        const response = await api.post<CreateTask>('/api/tasks', formattedTask);
         return response.data;
     },
 
@@ -36,6 +44,6 @@ export const taskApi = {
     },
 
     delete: async (id: string) => {
-        await api.delete('/api/tasks/${id}');
+        await api.delete(`/api/tasks/${id}`);
     },
 };
