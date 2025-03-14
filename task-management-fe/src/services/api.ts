@@ -1,4 +1,4 @@
-import { ProjectTask, CreateTask } from '@/types/task';
+import { ProjectTask, CreateTask, UpdateTask } from '@/types/task';
 import axios from 'axios';
 // import { v4 as uuidv4 } from 'uuid';
 
@@ -9,6 +9,11 @@ const api = axios.create({
 export const taskApi = {
     getAll: async () => {
         const response = await api.get<ProjectTask[]>('/api/tasks');
+        return response.data;
+    },
+
+    getTask: async (id: string): Promise<ProjectTask> => {
+        const response = await axios.get<ProjectTask>(`/api/tasks/${id}`);
         return response.data;
     },
 
@@ -25,23 +30,20 @@ export const taskApi = {
         return response.data;
     },
 
-    // create: async (task: CreateTask) => {
-    //     try {
-    //         const response = await api.post<ProjectTask>('/api/tasks', {
-    //             ...task,
-    //             dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null, // Ensure valid date
-    //         });
-    //         return response.data;
-    //     } catch (error: any) {
-    //         console.error('Error creating task:', error.response?.data || error.message);
-    //         throw error;
-    //     }
-    // },
-
-    update: async (id: string, task: Partial<ProjectTask>) => {
-        const response = await api.put<ProjectTask>('/api/tasks/${id}', task);
+    updateTask: async (id: string, updatedFields: Partial<ProjectTask>) => {
+        const response = await api.put<ProjectTask>(`/api/tasks/${id}`, updatedFields);
         return response.data;
     },
+
+    updateStatus: async (id: string, status: number) => {
+        const response = await api.patch<ProjectTask>(`/api/tasks/${id}/status`, {
+            status,
+            userId:"a89e68fe-7b43-4e2b-bd29-2edf006e8f83",
+            projectId:"5624882a-718c-4d1b-abbe-1aa0a2ca039e"
+        });
+        return response.data;
+    },
+
 
     delete: async (id: string) => {
         await api.delete(`/api/tasks/${id}`);

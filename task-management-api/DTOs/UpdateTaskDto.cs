@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using task_management_api.Models;
 
 namespace task_management_api.DTOs
 {
@@ -8,6 +9,6 @@ namespace task_management_api.DTOs
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime? DueDate { get; set; }
-        public string Status { get; set; }
+        public ProjectTaskStatus Status { get; set; }
     }
 }

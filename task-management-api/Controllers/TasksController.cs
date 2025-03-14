@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using task_management_api.Data;
 using task_management_api.DTOs;
 using task_management_api.Models;
 using task_management_api.Services;
@@ -23,6 +25,7 @@ namespace task_management_api.Controllers
             return Ok(await _taskService.GetTasks());
         }
 
+
         // GET: GetTasks[id]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectTask>> GetTask(Guid id)
@@ -33,6 +36,8 @@ namespace task_management_api.Controllers
 
         // POST: CreateTask
         [HttpPost]
+        [ProducesResponseType(typeof(ProjectTask), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ProjectTask>> CreateTask([FromBody] CreateTaskDto taskDto)
         {
             if (taskDto == null)
@@ -61,11 +66,28 @@ namespace task_management_api.Controllers
             return task != null ? Ok(task) : NotFound();
         }
 
+        // Update status function
+        [HttpPatch("{id}/status")]
+        public async Task<ActionResult<ProjectTask>> UpdateTaskStatus(Guid id, [FromBody] UpdateTaskStatusDto taskDto)
+        {
+            var updatedTask = await _taskService.UpdateTaskStatus(id, taskDto);
+            return updatedTask != null ? Ok(updatedTask) : NotFound();
+        }
+
         // DELETE: DeleteTask[id]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTask(Guid id)
         {
-            return await _taskService.DeleteTask(id) ? NoContent() : NotFound();
+            var deleted = await _taskService.DeleteTask(id);
+
+            if (!deleted)
+            {
+                return NotFound(new { message = "Task not found." });
+            }
+
+            return NoContent();
         }
     }
 }

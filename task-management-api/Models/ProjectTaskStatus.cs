@@ -1,9 +1,9 @@
 ﻿namespace task_management_api.Models
 {
-    public enum TaskStatus
+    public enum ProjectTaskStatus
     {
         Todo,
         InProgress,
-        Done
+        Completed
     }
 }

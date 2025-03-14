@@ -20,7 +20,32 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #1e1e1e; /* Dark background */
+  color: #E0E0E0; /* Light text */
+}
+
+.ant-picker {
+  background-color: #252526 !important;  /* Dark gray background */
+  border-color: #3C3C3C !important;      /* Subtle border */
+  color: #E0E0E0 !important;             /* Light text */
+}
+
+.ant-picker-input > input {
+  color: #E0E0E0 !important; /* Ensures the input text is white */
+}
+
+.ant-picker-panel {
+  background-color: #252526 !important;  /* Dark picker panel */
+}
+
+.ant-picker-cell-inner {
+  color: #E0E0E0 !important;  /* Light text for dates */
+}
+
+.ant-picker-cell-inner:hover {
+  background-color: #3A3A3A !important; /* Slightly lighter hover effect */
+}
+
+.custom-select .ant-select-arrow {
+  color: #E0E0E0 !important;
 }
