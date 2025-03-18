@@ -6,7 +6,6 @@ import { taskApi } from '@/services/api';
 import { statusMap, reverseStatusMap, statusDisplayMap } from '@/utils/status';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// import '@ant-design/v5-patch-for-react-19';
 
 interface TaskCardProps {
     task: ProjectTask;
@@ -41,7 +40,7 @@ export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
   };
 
   return (
-    <div className="flex justify-center p-4 bg-[#1e1e1e]"> {/* Background */}
+    <div className="flex justify-center bg-[#1e1e1e] rounded-md"> {/* Background */}
       <Card
         className="shadow-lg rounded-lg"
         style={{
@@ -49,7 +48,6 @@ export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
           borderColor: "#3C3C3C",          // Subtle border
           color: "#E0E0E0",             // Light text
           width: "100%",
-          maxWidth: "400px",
         }}
         title={<span style={{ color: "#E0E0E0" }}>{task.taskTitle}</span>} // Light title
         extra={<Select
@@ -84,34 +82,6 @@ export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
         <p style={{ color: "#E0E0E0" }}>
           <strong>Created At:</strong> {new Date(task.createdAt).toLocaleDateString()}
         </p>
-
-        {/* Status Dropdown */}
-        {/* <div className="mt-4 flex items-center gap-2">
-          <label className="text-gray-400 text-sm">Status:</label>
-          <Select
-            value={currentStatus}
-            onChange={handleStatusChange}
-            style={{
-              width: "130px",
-              backgroundColor: "#333", 
-              color: "#E0E0E0",
-              borderRadius: "8px",
-              border: "1px solid #444",
-            }}
-            dropdownStyle={{
-              backgroundColor: "#333", 
-              borderRadius: "8px",
-              border: "1px solid #444",
-            }}
-            loading={loading}
-            variant="borderless"
-            options={[
-              { value: 0, label: <Tag color="orange">Todo</Tag> },
-              { value: 1, label: <Tag color="blue">In Progress</Tag> },
-              { value: 2, label: <Tag color="green">Done</Tag> },
-            ]}
-          />
-        </div> */}
 
         <Space className="mt-4">
             <Button icon={<EditOutlined />} style={{ backgroundColor: "#333", color: "#E0E0E0", borderColor: "#444" }} onClick={() => router.push(`/dashboard/edit/${task.id}`)}>

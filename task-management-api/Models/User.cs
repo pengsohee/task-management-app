@@ -14,7 +14,7 @@ namespace task_management_api.Models
         [EmailAddress]
         public string Email { get; set; }
         [Required]
-        public byte[] PasswordHash { get; set; }
+        public string PasswordHash { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         // Navigation properties

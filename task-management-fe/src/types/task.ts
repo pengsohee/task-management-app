@@ -24,6 +24,8 @@ export interface UpdateTask {
     description: string;
     dueDate: string;
     status: number;
+    projectId: string;
+    userId: string;
 }
 
 export interface CreateTask {

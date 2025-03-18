@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_management_api.Data;
@@ -17,11 +18,12 @@ namespace task_management_api.Services
         }
 
         // Get Task Function
-        public async Task<List<TaskResponseDto>> GetTasks()
+        public async Task<List<TaskResponseDto>> GetTasks(Guid userId)
         {
             var tasks = await _context.Tasks
                 .Include(t => t.Project)
                 .ThenInclude(p => p.User)
+                .Where(t => t.Project.UserId == userId)
                 .Select(t => new TaskResponseDto
                 {
                     Id = t.Id,
@@ -51,7 +53,9 @@ namespace task_management_api.Services
                     Status = t.Status.ToString(),
                     DueDate = t.DueDate,
                     CreatedAt = t.CreatedAt,
+                    ProjectId = t.ProjectId,
                     ProjectTitle = t.Project.Title,
+                    UserId = t.UserId,
                     Username = t.Project.User.Username
                 })
                 .FirstOrDefaultAsync();

@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using task_management_api.Data;
-using task_management_api.Models;
-using task_management_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using task_management_api.Data;
+using task_management_api.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -12,9 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer(); // Required for OpenAPI
+builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<TaskService>();
-builder.Services.AddControllers();
+builder.Services.AddScoped<ProjectService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -22,106 +21,68 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-// Configure Identity
-//builder.Services.AddIdentity<User, IdentityRole>()
-//    .AddEntityFrameworkStores<AppDbContext>()
-//    .AddDefaultTokenProviders();
+// Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true
+    };
+});
 
-// JWT Configuration
-//var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.RequireHttpsMetadata = false;
-//        options.SaveToken = true;
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuerSigningKey = true,
-//            IssuerSigningKey = new SymmetricSecurityKey(key),
-//            ValidateIssuer = false,
-//            ValidateAudience = false,
-//            ValidateLifetime = true,
-//        };
-//    });
+builder.Services.AddScoped<PasswordService>();
+builder.Services.AddAuthorization();
 
-// Configure database connection
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
-// Add Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Task Management API",
-        Version = "v1"
-    });
-});
-
-// Configure CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd", policy =>
     {
         policy
-        .WithOrigins("http://127.0.0.1:3000")
-        .AllowAnyHeader()
-        .AllowAnyMethod();        
+            .WithOrigins("http://localhost:3000", "http://127.0.0.1:3000") // Allow both origins
+            .AllowAnyMethod() // Allow all HTTP methods
+            .AllowAnyHeader() // Allow all headers
+            .AllowCredentials(); // Allow credentials (cookies, auth headers)
     });
 });
 
 var app = builder.Build();
 
-// Apply migrations
+// Migrations
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
-// Configure middleware
+// enable middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Task Management API v1"));
+    app.UseSwaggerUI();
 }
 
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-
+app.UseRouting();
 app.UseCors("AllowFrontEnd");
-app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+
+app.MapControllers()
+    .RequireCors("AllowFrontEnd");
+
 app.Run();
-
-
-//var summaries = new[]
-//{
-//    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-//};
-
-//app.MapGet("/weatherforecast", () =>
-//{
-//    var forecast =  Enumerable.Range(1, 5).Select(index =>
-//        new WeatherForecast
-//        (
-//            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-//            Random.Shared.Next(-20, 55),
-//            summaries[Random.Shared.Next(summaries.Length)]
-//        ))
-//        .ToArray();
-//    return forecast;
-//})
-//.WithName("GetWeatherForecast");
-
-
-
-//record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-//{
-//    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-//}

@@ -1,0 +1,10 @@
+/* dark-avatar-button.css */
+.dark-avatar-button {
+    background-color: #252526; /* Match Avatar background */
+    color: #E0E0E0; /* Match Avatar text/icon color */
+    border: 1px solid #3c3c3c; /* Match Avatar border */
+  }
+  
+  .dark-avatar-button:hover {
+    background-color: #3A3A3A; /* Slightly lighter on hover */
+  }

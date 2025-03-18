@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_management_api.Data;
 using task_management_api.DTOs;
@@ -19,14 +21,25 @@ namespace task_management_api.Controllers
         }
 
         // GET: GetTasks
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<TaskResponseDto>>> GetTasks()
         {
-            return Ok(await _taskService.GetTasks());
+            var userIdClaim = User.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return Unauthorized("Invalid User ID in token");
+            }
+
+            var tasks = await _taskService.GetTasks(userId);
+
+            return Ok(tasks);
         }
 
 
         // GET: GetTasks[id]
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectTask>> GetTask(Guid id)
         {
@@ -35,6 +48,7 @@ namespace task_management_api.Controllers
         }
 
         // POST: CreateTask
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(typeof(ProjectTask), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -55,7 +69,8 @@ namespace task_management_api.Controllers
         }
 
         // PUT: UpdateTask[id]
-        [HttpPut("{id}")]
+        [Authorize]
+        [HttpPatch("{id}")]
         public async Task<ActionResult<ProjectTask>> UpdateTask(Guid id, UpdateTaskDto taskDto)
         {
             if (taskDto == null)
@@ -67,6 +82,7 @@ namespace task_management_api.Controllers
         }
 
         // Update status function
+        [Authorize]
         [HttpPatch("{id}/status")]
         public async Task<ActionResult<ProjectTask>> UpdateTaskStatus(Guid id, [FromBody] UpdateTaskStatusDto taskDto)
         {
@@ -75,6 +91,7 @@ namespace task_management_api.Controllers
         }
 
         // DELETE: DeleteTask[id]
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

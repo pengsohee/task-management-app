@@ -1,19 +1,34 @@
 import { ProjectTask, CreateTask, UpdateTask } from '@/types/task';
 import axios from 'axios';
-// import { v4 as uuidv4 } from 'uuid';
+import { getToken } from './auth';
+import { Project } from '@/types/project';
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Req interceptors to include token
+api.interceptors.request.use(config => {
+    const token = getToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 export const taskApi = {
-    getAll: async () => {
+    // getAll
+    getAll: async (): Promise<ProjectTask[]> => {
         const response = await api.get<ProjectTask[]>('/api/tasks');
         return response.data;
     },
 
+    // getTask
     getTask: async (id: string): Promise<ProjectTask> => {
-        const response = await axios.get<ProjectTask>(`/api/tasks/${id}`);
+        const response = await api.get<ProjectTask>(`/api/tasks/${id}`);
         return response.data;
     },
 
@@ -30,8 +45,15 @@ export const taskApi = {
         return response.data;
     },
 
-    updateTask: async (id: string, updatedFields: Partial<ProjectTask>) => {
-        const response = await api.put<ProjectTask>(`/api/tasks/${id}`, updatedFields);
+    updateTask: async (id: string, title:string, description: string, dueDate: string, status: number) => {
+        const response = await api.patch<ProjectTask>(`/api/tasks/${id}`, {
+            title,
+            description,
+            dueDate,
+            status: 0,
+            // userId: "a89e68fe-7b43-4e2b-bd29-2edf006e8f83",
+            // projectId: "5624882a-718c-4d1b-abbe-1aa0a2ca039e"
+        });
         return response.data;
     },
 
