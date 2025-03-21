@@ -17,3 +17,4 @@ export const storeToken = (token: string): void => {
         localStorage.setItem('authToken', token);
     }
 };
+

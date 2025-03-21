@@ -23,7 +23,7 @@ namespace task_management_api.Services
             var tasks = await _context.Tasks
                 .Include(t => t.Project)
                 .ThenInclude(p => p.User)
-                .Where(t => t.Project.UserId == userId)
+                //.Where(t => t.Project.UserId == userId)
                 .Select(t => new TaskResponseDto
                 {
                     Id = t.Id,
@@ -132,12 +132,14 @@ namespace task_management_api.Services
                 throw new ArgumentException("Invalid task status");
             }
 
-            // Update only the status
             task.Status = taskDto.Status;
 
-            // Hardcode userId and projectId if needed
-            task.UserId = Guid.Parse("a89e68fe-7b43-4e2b-bd29-2edf006e8f83");
-            task.ProjectId = Guid.Parse("5624882a-718c-4d1b-abbe-1aa0a2ca039e");
+            //// Update only the status
+            //task.Status = taskDto.Status;
+
+            //// Hardcode userId and projectId if needed
+            //task.UserId = Guid.Parse("a89e68fe-7b43-4e2b-bd29-2edf006e8f83");
+            //task.ProjectId = Guid.Parse("5624882a-718c-4d1b-abbe-1aa0a2ca039e");
 
             await _context.SaveChangesAsync();
             return task;

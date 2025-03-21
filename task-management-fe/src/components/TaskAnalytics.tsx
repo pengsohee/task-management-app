@@ -1,5 +1,5 @@
 import React from "react";
-import { Pie } from "@ant-design/plots";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { ProjectTask } from "@/types/task";
 
 const TaskAnalytics = ({ tasks }: { tasks: ProjectTask[] }) => {
@@ -12,82 +12,62 @@ const TaskAnalytics = ({ tasks }: { tasks: ProjectTask[] }) => {
 
     // Data for the chart
     const data = [
-        { type: "InProgress", value: tasksCount.InProgress, color: "#0088FE" }, // Blue
-        { type: "Completed", value: tasksCount.Completed, color: "#00C49F" }, // Green
         { type: "Todo", value: tasksCount.Todo, color: "#fcb57e" }, // Orange
+        { type: "In Progress", value: tasksCount.InProgress, color: "#0088FE" }, // Blue
+        { type: "Completed", value: tasksCount.Completed, color: "#00C49F" }, // Green
     ];
 
-    // Define color mapping function
-    const colorMapping: { [key: string]: string } = {
-        Todo: "#fcb57e",       // Orange
-        InProgress: "#0088FE", // Blue
-        Completed: "#00C49F",  // Green
-    };
-
-    // Chart config
-    const config = {
-        appendPadding: 20,
-        data,
-        angleField: "value",
-        colorField: "type",
-        radius: 0.85,  // Donut chart with an inner circle
-        innerRadius: 0.6,
-        color: ({ type }: { type: string }) => colorMapping[type],
-        label: {
-            type: "spider", // Places labels outside for better readability
-            content: ({ type, value, percent }: { type: string; value: number; percent: number }) => 
-                `${type}: ${value} (${(percent * 100).toFixed(1)}%)`,
-            style: { fontSize: 14, fill: "#E0E0E0" },
-        },
-        statistic: {
-            title: {
-                offsetY: -5,
-                style: { fontSize: "16px", fill: "#E0E0E0" },
-                content: "Total Tasks",
-            },
-            content: {
-                offsetY: 5,
-                style: { fontSize: "24px", fontWeight: "bold", fill: "#ffffff" },
-                content: `${tasks.length}`,
-            },
-        },
-        legend: {
-            position: "bottom",
-            itemName: {
-                style: {
-                    fill: "#ffffff", // ✅ Always white text
-                    fontSize: 14,
-                    fontWeight: "bold",
-                },
-            },
-            itemValue: {
-                style: {
-                    fill: "#ffffff", // ✅ Ensures numbers stay visible
-                    fontSize: 14,
-                },
-            },
-            marker: {
-                symbol: "circle", // ✅ Makes legend markers round
-                style: { r: 8 },
-            },
-        },
-        interactions: [
-            { type: "element-active" },
-            { type: "legend-highlight" }
-        ],
-        state: {
-            inactive: {
-                style: {
-                    opacity: 0.5, // ✅ Chart fades slightly, but legend text stays visible
-                },
-            },
-        },
-    };
-
     return (
-        <div className="bg-[#252526] p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-300 mb-2">Task Status Overview</h2>
-            <Pie {...config} />
+        <div className="bg-[#252526] p-6 rounded-lg shadow-lg w-full max-w-md mx-auto">
+            <h2 className="text-lg font-semibold text-gray-300 mb-4 text-center">Task Status Overview</h2>
+
+            <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                    <Pie
+                        data={data}
+                        dataKey="value"
+                        nameKey="type"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        innerRadius={70} // Donut effect
+                        fill="#8884d8"
+                        paddingAngle={3}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                    </Pie>
+
+                    {/* Custom Tooltip with readable styling */}
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: "white",
+                            color: "black",
+                            borderRadius: "5px",
+                            padding: "5px",
+                            boxShadow: "0px 2px 10px rgba(0,0,0,0.2)"
+                        }}
+                        itemStyle={{ color: "black" }}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+
+            {/* Legend */}
+            <div className="flex justify-center space-x-4 mt-4">
+                {data.map((entry, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
+                        <span className="text-gray-300">{entry.type}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Total Tasks Count */}
+            <div className="text-center text-white text-lg font-bold mt-4">
+                Total Tasks: {tasks.length}
+            </div>
         </div>
     );
 };

@@ -82,6 +82,7 @@ namespace task_management_api.Controllers
 
             return Ok(new
             {
+                id = user.Id,
                 username = user?.Username,
                 email = user?.Email
             });

@@ -68,7 +68,7 @@ namespace task_management_api.Controllers
             return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
         }
 
-        // PUT: UpdateTask[id]
+        // PATCH: UpdateTask[id]
         [Authorize]
         [HttpPatch("{id}")]
         public async Task<ActionResult<ProjectTask>> UpdateTask(Guid id, UpdateTaskDto taskDto)
@@ -81,7 +81,7 @@ namespace task_management_api.Controllers
             return task != null ? Ok(task) : NotFound();
         }
 
-        // Update status function
+        // PATCH: Update status function
         [Authorize]
         [HttpPatch("{id}/status")]
         public async Task<ActionResult<ProjectTask>> UpdateTaskStatus(Guid id, [FromBody] UpdateTaskStatusDto taskDto)

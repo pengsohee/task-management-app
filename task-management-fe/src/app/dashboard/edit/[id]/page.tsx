@@ -1,83 +1,79 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
-import { taskApi } from '@/services/api';
-import EditTaskForm from '@/components/TaskForm';
 import { useEffect, useState } from 'react';
-import { ProjectTask, UpdateTask } from '@/types/task';
-import EditTask from '@/components/EditForm';
+import { useRouter, useParams } from 'next/navigation';
+import { getToken, removeToken } from '@/services/auth';
+import EditProfileForm from '@/components/EditProfileForm';
 
-export default function EditTaskPage() {
-    const router = useRouter();
-    const params = useParams();
-    console.log("Params object:", params);
-    const taskId = Array.isArray(params.id) ? params.id[0] : params.id;
-    console.log("Task ID:", taskId);
+interface UserData {
+  id: string;
+  username: string;
+  email: string;
+}
 
-    const [taskToEdit, setTaskToEdit] = useState<ProjectTask | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    
-    useEffect(() => {
-        if (!taskId) {
-            setIsLoading(false);
-            setError("Task ID is missing.");
-            return;
+export default function EditProfilePage() {
+  const { id: routeUserId } = useParams(); // extract the id from URL
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error('Failed to fetch user data');
         }
-
-        const fetchTask= async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                console.log("Fetching task id:", taskId);
-                const task = await taskApi.getTask(taskId);
-                console.log("Task fetched:", task);
-                setTaskToEdit(task);
-            } catch (err) {
-                setError("Failed to fetch!");
-                console.error("Error fetching task ", err);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchTask();
-    }, [taskId]);
-
-    const handleEdit = async (data: UpdateTask) => {
-        if (!taskId) {
-            setError('Task ID is missing.');
-            return;
-        }
-        try {
-            await taskApi.updateTask(taskId, data.title, data.description, data.dueDate, data.status); // Update the task
-            router.push('/dashboard');
-        } catch (error) {
-            console.error('Task edit failed:', error);
-            setError('Task edit failed.');
-        }
+        const data = await res.json();
+        // Assuming the auth endpoint returns an object with id, username, and email
+        setUserData({
+          id: data.id,
+          username: data.username,
+          email: data.email,
+        });
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+        setError('Failed to fetch user data');
+        removeToken();
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
+    fetchUser();
+  }, [router]);
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+  if (loading) return <p>Loading user data...</p>;
+  if (error) return <p>{error}</p>;
 
-    if (!taskToEdit) {
-        return <div>Task not found.</div>;
-    }
+  // Verify that the authenticated user's id matches the id in the route.
+  if (routeUserId !== userData?.id) {
+    return <p>You are not authorized to edit this profile.</p>;
+  }
 
-    return (
-        <div className='container mx-auto p-4 max-w-2xl'>
-            <h2 className='text-xl font-bold mb-4'>Edit Task</h2>
-            <EditTask
-                initialData={taskToEdit}
-                onSubmit={handleEdit}
-            />
-        </div>
-    );
+  return (
+    <div className="max-w-lg mx-auto mt-10 p-6 border rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-4 text-center">Edit Profile</h1>
+      {userData ? (
+        <EditProfileForm
+          userId={userData.id}
+          initialData={{ username: userData.username, email: userData.email }}
+        />
+      ) : (
+        <p>No user data available</p>
+      )}
+    </div>
+  );
 }
